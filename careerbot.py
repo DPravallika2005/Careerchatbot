@@ -10,8 +10,9 @@ import time
 st.markdown("""
 <style>
     .stApp {
-        background: #f0f2f6;
+        background: linear-gradient(135deg, #f0f2f6, #d3e4ff);
         font-family: 'Arial', sans-serif;
+        min-height: 100vh;
     }
     .chat-font {
         font-family: 'Georgia', serif;
@@ -131,9 +132,10 @@ for question in predefined_questions:
         st.markdown(f"""
         <div class="card">
             <p>{question}</p>
-            <button onclick="window.location.href='?question={question}'" class="stButton">Ask this</button>
         </div>
         """, unsafe_allow_html=True)
+        if st.button(f"Ask: {question}"):
+            st.session_state.user_input = question
 
 # Function to find the closest matching question using FAISS
 def find_closest_question(query, faiss_index, df):
