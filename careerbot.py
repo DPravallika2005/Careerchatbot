@@ -114,10 +114,7 @@ if "messages" not in st.session_state:
     st.session_state.messages = []
 
 # User Input
-if "user_input" not in st.session_state:
-    st.session_state.user_input = ""
-
-user_query = st.text_input("Type your question here:", value=st.session_state.user_input, key="user_input")
+user_query = st.text_input("Type your question here:", key="user_input")
 
 if user_query:
     # Add user message to session state
