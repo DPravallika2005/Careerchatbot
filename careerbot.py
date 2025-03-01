@@ -3,7 +3,7 @@ import time
 import openai
 
 # Load OpenAI API key from Streamlit secrets
-openai.api_key = st.secrets["OPENAI_API_KEY"]
+openai.api_key = st.secrets["AIzaSyDchgKU8oNtY32jw7seTQdxbakzUFy7I7k"]
 
 # Inject custom CSS for dynamic background and animations
 st.markdown("""
