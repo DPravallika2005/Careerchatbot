@@ -2,9 +2,9 @@ import streamlit as st
 import pandas as pd
 import google.generativeai as genai
 from sentence_transformers import SentenceTransformer
-import faiss
 import numpy as np
 import time
+from sklearn.metrics.pairwise import cosine_similarity
 
 # Custom CSS for styling
 st.markdown("""
@@ -85,7 +85,7 @@ gemini = genai.GenerativeModel('gemini-pro')  # Use the publicly available model
 # Initialize models
 embedder = SentenceTransformer('all-MiniLM-L6-v2')  # Embedding model
 
-# Load data and create FAISS index
+# Load data
 @st.cache_data
 def load_data():
     try:
@@ -97,16 +97,21 @@ def load_data():
             lambda row: f"Profession: {row['Profession']}\nQuestion: {row['Question']}\nAnswer: {row['Answer']}", 
             axis=1
         )
-        embeddings = embedder.encode(df['context'].tolist())
-        index = faiss.IndexFlatL2(embeddings.shape[1])  # FAISS index for similarity search
-        index.add(np.array(embeddings).astype('float32'))
-        return df, index
+        return df
     except Exception as e:
         st.error(f"Failed to load data. Error: {e}")
         st.stop()
 
-# Load dataset and FAISS index
-df, faiss_index = load_data()
+# Load dataset
+df = load_data()
+
+# Function to find the closest matching question using cosine similarity
+def find_closest_question(query, df):
+    query_embedding = embedder.encode([query])
+    embeddings = embedder.encode(df['context'].tolist())
+    similarities = cosine_similarity(query_embedding, embeddings)
+    closest_index = np.argmax(similarities)
+    return df.iloc[closest_index]['Answer']
 
 # App Header with Logo and Tagline
 st.markdown("""
@@ -137,25 +142,6 @@ for question in predefined_questions:
         if st.button(f"Ask: {question}"):
             st.session_state.user_input = question
 
-# Function to find the closest matching question using FAISS
-def find_closest_question(query, faiss_index, df):
-    query_embedding = embedder.encode([query])
-    _, I = faiss_index.search(query_embedding.astype('float32'), k=1)  # Top 1 match
-    if I.size > 0:
-        return df.iloc[I[0][0]]['Answer']  # Return the closest answer
-    return None
-
-# Function to generate a refined answer using Gemini
-def generate_refined_answer(query, retrieved_answer):
-    prompt = f"""You are a career advisor. Respond to the following question in a friendly and conversational tone:
-    Question: {query}
-    Retrieved Answer: {retrieved_answer}
-    - Provide a detailed and accurate response.
-    - Ensure the response is grammatically correct and engaging.
-    """
-    response = gemini.generate_content(prompt)
-    return response.text
-
 # Chat Interface
 if "messages" not in st.session_state:
     st.session_state.messages = []
@@ -182,7 +168,7 @@ if prompt:
                 response_placeholder = st.empty()
                 response_text = ""
                 # Find the closest answer
-                retrieved_answer = find_closest_question(prompt, faiss_index, df)
+                retrieved_answer = find_closest_question(prompt, df)
                 if retrieved_answer:
                     # Generate a refined answer using Gemini
                     refined_answer = generate_refined_answer(prompt, retrieved_answer)
