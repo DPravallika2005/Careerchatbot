@@ -10,7 +10,7 @@ def load_data():
 data = load_data()
 
 # Directly embedding the Gemini API Key
-API_KEY = "AIzaSyDchgKU8oNtY32jw7seTQdxbakzUFy7I7k"  # Replace with your actual Gemini API Key
+API_KEY = "AIzaSyAYfcTAFba5mn5LXw4UNNfnBvQEgmNbAos"  # Replace with your actual Gemini API Key
 genai.configure(api_key=API_KEY)
 
 def get_gemini_response(user_input):
@@ -85,11 +85,6 @@ st.markdown(
         font-family: Arial, sans-serif;
         box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.2);
     }}
-    
-    /* Increase the width of the text input box */
-    .stTextInput>div>div>input {{
-        width: 100% !important;
-    }}
     </style>
     """,
     unsafe_allow_html=True
@@ -114,7 +109,7 @@ if "messages" not in st.session_state:
     st.session_state.messages = []
 
 # User Input
-user_query = st.text_input("Type your question here:", key="user_input", value="")
+user_query = st.text_input("Type your question here:")
 
 if user_query:
     # Add user message to session state
@@ -130,9 +125,6 @@ if user_query:
 
     # Add bot response to session state
     st.session_state.messages.append({"role": "bot", "text": answer})
-
-    # Clear the input box after submission
-    st.session_state.user_input = ""
 
 # Display chat messages with proper alignment
 for message in st.session_state.messages:
