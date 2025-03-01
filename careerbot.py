@@ -3,7 +3,7 @@ import pandas as pd
 import google.generativeai as genai
 import time
 
-# Inject custom CSS and JavaScript for dynamic background
+# Inject custom CSS for dynamic background
 st.markdown("""
 <style>
     @keyframes gradientChange {
@@ -14,9 +14,10 @@ st.markdown("""
         100% { background: linear-gradient(135deg, #0078d4, #ffffff); }
     }
     .stApp {
-        animation: gradientChange 40s infinite;
+        animation: gradientChange 4s infinite; /* 4s for 4 gradients (1s per gradient) */
         font-family: 'Arial', sans-serif;
         min-height: 100vh;
+        background-size: cover; /* Ensure gradient covers the entire page */
     }
     .chat-font {
         font-family: 'Times New Roman', serif;
@@ -71,6 +72,17 @@ def find_closest_question(query, df):
         if query in row['Question'].lower():
             return row['Answer']
     return None
+
+# Function to generate a refined answer using Gemini
+def generate_refined_answer(query, retrieved_answer):
+    prompt = f"""You are a career advisor. Respond to the following question in a friendly and conversational tone:
+    Question: {query}
+    Retrieved Answer: {retrieved_answer}
+    - Provide a detailed and accurate response.
+    - Ensure the response is grammatically correct and engaging.
+    """
+    response = gemini.generate_content(prompt)
+    return response.text
 
 # App Header
 st.markdown('<h1 class="chat-font">🤖 Career Chatbot</h1>', unsafe_allow_html=True)
