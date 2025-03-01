@@ -1,1 +1,6 @@
-
+streamlit
+pandas
+google-generativeai>=0.3.0  # Ensure you have the latest version
+sentence-transformers
+faiss-cpu
+numpy
