@@ -1,10 +1,7 @@
 import streamlit as st
 import pandas as pd
 import google.generativeai as genai
-from transformers import pipeline
-import numpy as np
 import time
-from sklearn.metrics.pairwise import cosine_similarity
 
 # Custom CSS for styling
 st.markdown("""
@@ -82,9 +79,6 @@ st.markdown("""
 genai.configure(api_key="AIzaSyDchgKU8oNtY32jw7seTQdxbakzUFy7I7k")  # Replace with your Gemini API key
 gemini = genai.GenerativeModel('gemini-pro')  # Use the publicly available model
 
-# Initialize models
-embedder = pipeline("feature-extraction", model="distilbert-base-uncased")  # Lightweight embedding model
-
 # Load data
 @st.cache_data
 def load_data():
@@ -93,10 +87,6 @@ def load_data():
         if 'Question' not in df.columns or 'Answer' not in df.columns:
             st.error("The CSV file must contain 'Question' and 'Answer' columns.")
             st.stop()
-        df['context'] = df.apply(
-            lambda row: f"Profession: {row['Profession']}\nQuestion: {row['Question']}\nAnswer: {row['Answer']}", 
-            axis=1
-        )
         return df
     except Exception as e:
         st.error(f"Failed to load data. Error: {e}")
@@ -105,18 +95,13 @@ def load_data():
 # Load dataset
 df = load_data()
 
-# Function to generate embeddings
-def generate_embedding(text):
-    embedding = embedder(text, return_tensors="np")[0].mean(axis=1)  # Mean pooling for embeddings
-    return embedding
-
-# Function to find the closest matching question using cosine similarity
+# Function to find the closest matching question using keyword matching
 def find_closest_question(query, df):
-    query_embedding = generate_embedding(query)
-    embeddings = np.array([generate_embedding(context) for context in df['context']])
-    similarities = cosine_similarity(query_embedding, embeddings)
-    closest_index = np.argmax(similarities)
-    return df.iloc[closest_index]['Answer']
+    query = query.lower()
+    for index, row in df.iterrows():
+        if query in row['Question'].lower():
+            return row['Answer']
+    return None
 
 # App Header with Logo and Tagline
 st.markdown("""
