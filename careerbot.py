@@ -1,7 +1,7 @@
 import streamlit as st
 import pandas as pd
 import google.generativeai as genai
-from sentence_transformers import SentenceTransformer
+from transformers import pipeline
 import numpy as np
 import time
 from sklearn.metrics.pairwise import cosine_similarity
@@ -83,7 +83,7 @@ genai.configure(api_key="AIzaSyDchgKU8oNtY32jw7seTQdxbakzUFy7I7k")  # Replace wi
 gemini = genai.GenerativeModel('gemini-pro')  # Use the publicly available model
 
 # Initialize models
-embedder = SentenceTransformer('all-MiniLM-L6-v2')  # Embedding model
+embedder = pipeline("feature-extraction", model="distilbert-base-uncased")  # Lightweight embedding model
 
 # Load data
 @st.cache_data
@@ -105,10 +105,15 @@ def load_data():
 # Load dataset
 df = load_data()
 
+# Function to generate embeddings
+def generate_embedding(text):
+    embedding = embedder(text, return_tensors="np")[0].mean(axis=1)  # Mean pooling for embeddings
+    return embedding
+
 # Function to find the closest matching question using cosine similarity
 def find_closest_question(query, df):
-    query_embedding = embedder.encode([query])
-    embeddings = embedder.encode(df['context'].tolist())
+    query_embedding = generate_embedding(query)
+    embeddings = np.array([generate_embedding(context) for context in df['context']])
     similarities = cosine_similarity(query_embedding, embeddings)
     closest_index = np.argmax(similarities)
     return df.iloc[closest_index]['Answer']
