@@ -1,5 +1,9 @@
 import streamlit as st
 import time
+import openai
+
+# Load OpenAI API key from Streamlit secrets
+openai.api_key = st.secrets["OPENAI_API_KEY"]
 
 # Inject custom CSS for dynamic background and animations
 st.markdown("""
@@ -138,6 +142,17 @@ for message in st.session_state['chat_history']:
     else:
         st.markdown(f'<div class="bot-msg"><img src="{bot_avatar}" class="avatar"><span class="typing-effect">{message["content"]}</span></div>', unsafe_allow_html=True)
 
+# Function to generate bot response using OpenAI GPT
+def generate_bot_response(user_input):
+    response = openai.ChatCompletion.create(
+        model="gpt-3.5-turbo",
+        messages=[
+            {"role": "system", "content": "You are a helpful assistant."},
+            {"role": "user", "content": user_input},
+        ],
+    )
+    return response['choices'][0]['message']['content']
+
 # User input
 user_input = st.chat_input("Type your message here...")
 
@@ -149,8 +164,8 @@ if user_input:
     with st.spinner("Bot is typing..."):
         time.sleep(1)  # Simulate delay for typing effect
 
-        # Generate bot response (placeholder for actual bot logic)
-        bot_response = f"Bot response to: {user_input}"
+        # Generate bot response using OpenAI GPT
+        bot_response = generate_bot_response(user_input)
 
         # Add bot response to chat history
         st.session_state['chat_history'].append({'role': 'bot', 'content': bot_response})
