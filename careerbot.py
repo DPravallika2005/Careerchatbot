@@ -10,7 +10,7 @@ import time
 st.markdown("""
 <style>
     .stApp {
-        background: linear-gradient(135deg, #f0f2f6, #d3e4ff);
+        background: linear-gradient(135deg, #0078d4, #ffffff);
         font-family: 'Arial', sans-serif;
         min-height: 100vh;
     }
